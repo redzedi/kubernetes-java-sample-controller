@@ -2,5 +2,7 @@ apiVersion: spring.io/v1
 kind: ConfigClient
 metadata:
   name: demo
+  labels:
+     l1: test
 spec:
-  url: http://localhost:8888/customers/default/main
+  url:  http://192.168.106.2/configserver/customers/default/main

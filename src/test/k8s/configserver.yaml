@@ -19,7 +19,7 @@ spec:
           name: configserver
           env:
             - name: SPRING_CLOUD_CONFIG_SERVER_GIT_URI
-              value: "https://github.com/joshlong/crm-config.git"
+              value: "https://github.com/redzedi/crm-config.git"
             - name : SPRING_CLOUD_CONFIG_SERVER_DEFAULT_LABEL
               value: "main"
           ports:
@@ -39,3 +39,43 @@ spec:
       targetPort: 8888
   selector:
     configserver: configserver
+
+---
+
+# Middleware
+# Strip prefix /overview
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: mw-admin1
+  namespace: default
+spec:
+  stripPrefix:
+    forceSlash: false
+    prefixes:
+      - "/configserver"
+---
+
+apiVersion:  networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test1
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    #traefik.ingress.kubernetes.io/rewrite-target: /
+    traefik.ingress.kubernetes.io/router.middlewares: default-mw-admin1@kubernetescrd
+    #traefik.ingress.kubernetes.io/rule-type: PathPrefixStrip
+  
+    
+spec:
+  #ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /configserver
+        pathType: Prefix
+        backend:
+          service:
+            name: configserver
+            port:
+              number: 80
